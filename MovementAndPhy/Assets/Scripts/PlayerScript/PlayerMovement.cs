@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
     Vector3 moveDirection;
 
     Rigidbody rb;
+    //private Animator anim;
 
     [Header("Check player on the groun")]
     public float playerHeight;
@@ -43,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.3f, whatIsGrounded);
         MyInput();
         SpeedControl();
+
         // handle drag if grounded
         if (grounded)
             rb.drag = groundDrag;
@@ -70,13 +72,26 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        // Calculate movement direction
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        Vector3 lookRotation = new Vector3(horizontalInput, 0, verticalInput).normalized;
 
-        if(grounded)
-        rb.AddForce(moveDirection.normalized * moveSpeed * 10, ForceMode.Force);
-        else if(!grounded)
-            rb.AddForce(moveDirection.normalized * jumpAirMultiplyer * 10, ForceMode.Force);
+        // Calculate movement direction
+      //  moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if (grounded)
+            rb.AddForce(lookRotation * moveSpeed * 10, ForceMode.Force);
+        else if (!grounded)
+            rb.AddForce(lookRotation * jumpAirMultiplyer * 10, ForceMode.Force);
+
+     
+
+
+        if (lookRotation != Vector3.zero)
+        {
+            // Do the rotation here
+            Quaternion targetRotation = Quaternion.LookRotation(lookRotation);
+            targetRotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.fixedDeltaTime);
+            rb.MoveRotation(targetRotation);
+        }
+
     }
 
     private void SpeedControl()
