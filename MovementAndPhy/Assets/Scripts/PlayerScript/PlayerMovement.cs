@@ -19,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
 
     Vector3 moveDirection;
 
+    public Joystick myJoystic;
+
     Rigidbody rb;
     //private Animator anim;
 
@@ -36,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         isReadyToJump = true;
+        
     }
 
     private void Update()
@@ -59,8 +62,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void MyInput()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
+        horizontalInput = myJoystic.Horizontal;
+        verticalInput = myJoystic.Vertical;
 
         if (isReadyToJump && Input.GetKeyDown(jumpkey) && grounded)
         {
@@ -76,8 +79,14 @@ public class PlayerMovement : MonoBehaviour
 
         // Calculate movement direction
       //  moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
         if (grounded)
-            rb.AddForce(lookRotation * moveSpeed * 10, ForceMode.Force);
+        //rb.AddForce(lookRotation * moveSpeed * 10, ForceMode.Force);
+        {
+            if (lookRotation.x < 0 || lookRotation.z <0)
+                lookRotation *= -1;
+            rb.AddForce(10 * moveSpeed * lookRotation ,ForceMode.Force);
+        }
         else if (!grounded)
             rb.AddForce(lookRotation * jumpAirMultiplyer * 10, ForceMode.Force);
 
@@ -86,7 +95,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (lookRotation != Vector3.zero)
         {
-            // Do the rotation here
+            // Do the rotation here 
             Quaternion targetRotation = Quaternion.LookRotation(lookRotation);
             targetRotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.fixedDeltaTime);
             rb.MoveRotation(targetRotation);
